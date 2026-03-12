@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
 
 import com.gumraze.demo.layeredtdd.profile.constants.AgeGroup;
 import com.gumraze.demo.layeredtdd.profile.constants.Gender;
@@ -45,7 +46,7 @@ class ProfileServiceTest {
         // then
         assertEquals(validEmail, profile.getEmail());
         assertEquals("myNickname", profile.getNickname());
-        assertEquals("myPassword", profile.getPasswordHash());
+        assertEquals("HashedPassword", profile.getPasswordHash());
         assertEquals("myProfileImageUrl", profile.getProfileImageUrl());
         assertEquals(Region.SEOUL, profile.getRegion());
         assertEquals(Grade.D, profile.getGrade());
@@ -82,5 +83,41 @@ class ProfileServiceTest {
                 AgeGroup.TWENTIES,
                 Gender.MALE
         );
+    }
+
+    @Test
+    @DisplayName("중복 이메일이면 save()가 호출되지 않는다.")
+    void createProfile_duplicateEmail_doNotSave() {
+        // given
+        String duplicatedEmail = "myEmail@email.com";
+        CreateProfileRequest request = createRequest(duplicatedEmail);
+
+        given(profileRepository.existsByEmail(duplicatedEmail))
+                .willReturn(true);
+
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> profileService.create(request));
+
+        then(profileRepository).should(never()).save(any(Profile.class));
+    }
+
+    @Test
+    @DisplayName("중복 이메일 예외 메시지가 올바르다.")
+    void createProfile_duplicateEmail_exceptionMessage() {
+        // given
+        String duplicatedEmail = "myEmail@email.com";
+        CreateProfileRequest request = createRequest(duplicatedEmail);
+
+        given(profileRepository.existsByEmail(duplicatedEmail))
+                .willReturn(true);
+
+        // when
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> profileService.create(request)
+        );
+
+        // then
+        assertEquals("이미 사용 중인 이메일입니다.", exception.getMessage());
     }
 }
