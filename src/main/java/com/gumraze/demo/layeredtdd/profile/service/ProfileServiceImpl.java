@@ -18,6 +18,11 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public Profile create(CreateProfileRequest request) {
+
+        if (profileRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
         Profile profile = Profile.create(
                 request.email(),
                 request.nickname(),
