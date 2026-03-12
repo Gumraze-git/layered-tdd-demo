@@ -33,16 +33,8 @@ class ProfileServiceTest {
     @DisplayName("유효한 입력이면 프로필 생성에 성공한다")
     void createProfile_validInput_success() {
         // given
-        CreateProfileRequest request = new CreateProfileRequest(
-                "myEmail@email.com",
-                "myNickname",
-                "myPassword",
-                "myProfileImageUrl",
-                Region.SEOUL,
-                Grade.D,
-                AgeGroup.TWENTIES,
-                Gender.MALE
-        );
+        String validEmail = "myEmail@email.com";
+        CreateProfileRequest request = createRequest(validEmail);
 
         given(profileRepository.save(any(Profile.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
@@ -51,7 +43,7 @@ class ProfileServiceTest {
         Profile profile = profileService.create(request);
 
         // then
-        assertEquals("myEmail@email.com", profile.getEmail());
+        assertEquals(validEmail, profile.getEmail());
         assertEquals("myNickname", profile.getNickname());
         assertEquals("myPassword", profile.getPasswordHash());
         assertEquals("myProfileImageUrl", profile.getProfileImageUrl());
@@ -69,8 +61,19 @@ class ProfileServiceTest {
         // given: 등록된 이메일이 포함된 요청이 주어짐
         String duplicatedEmail = "myEmail@email.com";
 
-        CreateProfileRequest request = new CreateProfileRequest(
-                duplicatedEmail,
+        CreateProfileRequest request = createRequest(duplicatedEmail);
+
+        given(profileRepository.existsByEmail(duplicatedEmail))
+                .willReturn(true);
+
+        // when & then
+        // create 실행 시, IllegalArgumentException이 발생함.
+        assertThrows(IllegalArgumentException.class, () -> profileService.create(request));
+    }
+
+    private CreateProfileRequest createRequest(String email) {
+        return new CreateProfileRequest(
+                email,
                 "myNickname",
                 "HashedPassword",
                 "myProfileImageUrl",
@@ -79,12 +82,5 @@ class ProfileServiceTest {
                 AgeGroup.TWENTIES,
                 Gender.MALE
         );
-
-        given(profileRepository.existsByEmail(duplicatedEmail))
-                .willReturn(true);
-
-        // when & then
-        // create 실행 시, IllegalArgumentException이 발생함.
-        assertThrows(IllegalArgumentException.class, () -> profileService.create(request));
     }
 }
