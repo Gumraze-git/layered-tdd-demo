@@ -14,10 +14,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.Getter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Getter
 @Table(name = "profiles")
 public class Profile {
 
@@ -56,6 +58,28 @@ public class Profile {
     private LocalDateTime updatedAt;
 
     protected Profile() {}
+
+    public static Profile create(
+            String email,
+            String nickname,
+            String passwordHash,
+            String profileImageUrl,
+            Region region,
+            Grade grade,
+            AgeGroup ageGroup,
+            Gender gender
+    ) {
+        Profile profile = new Profile();
+        profile.email = email;
+        profile.nickname = nickname;
+        profile.passwordHash = passwordHash;
+        profile.profileImageUrl = profileImageUrl;
+        profile.region = region;
+        profile.grade = grade;
+        profile.ageGroup = ageGroup;
+        profile.gender = gender;
+        return profile;
+    }
 
     @PrePersist
     protected void onCreate() {
