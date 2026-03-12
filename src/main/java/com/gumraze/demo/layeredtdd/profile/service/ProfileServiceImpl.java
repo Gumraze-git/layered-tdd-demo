@@ -18,14 +18,8 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public Profile create(CreateProfileRequest request) {
-
-        if (profileRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
-        }
-
-        if (request.email() == null || request.email().isBlank()) {
-            throw new IllegalArgumentException("이메일은 필수입니다.");
-        }
+        validateRequiredFields(request);
+        validateDuplicateEmail(request.email());
 
         Profile profile = Profile.create(
                 request.email(),
@@ -39,5 +33,33 @@ public class ProfileServiceImpl implements ProfileService {
         );
 
         return profileRepository.save(profile);
+    }
+
+    private void validateRequiredFields(CreateProfileRequest request) {
+        validateText(request.email(), "이메일은 필수입니다.");
+        validateText(request.nickname(), "닉네임은 필수입니다.");
+        validateText(request.passwordHash(), "비밀번호는 필수입니다.");
+        validateRequired(request.region(), "지역은 필수입니다.");
+        validateRequired(request.grade(), "등급은 필수입니다.");
+        validateRequired(request.ageGroup(), "연령대는 필수입니다.");
+        validateRequired(request.gender(), "성별은 필수입니다.");
+    }
+
+    private void validateDuplicateEmail(String email) {
+        if (profileRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+    }
+
+    private void validateText(String value, String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    private void validateRequired(Object value, String message) {
+        if (value == null) {
+            throw new IllegalArgumentException(message);
+        }
     }
 }

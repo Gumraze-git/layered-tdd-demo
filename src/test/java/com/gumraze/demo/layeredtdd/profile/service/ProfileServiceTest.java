@@ -107,14 +107,15 @@ class ProfileServiceTest {
         // then
         assertEquals("이미 사용 중인 이메일입니다.", exception.getMessage());
     }
+
     @Test
     @DisplayName("이메일이 null이면 프로필 생성에 실패한다.")
     void createProfile_nullEmail_fail() {
         // given
-        CreateProfileRequest request = new CreateProfileRequest(
+        CreateProfileRequest request = createRequest(
                 null,
                 "myNickname",
-                "myPassword",
+                "HashedPassword",
                 "myProfileImageUrl",
                 Region.SEOUL,
                 Grade.D,
@@ -122,8 +123,14 @@ class ProfileServiceTest {
                 Gender.MALE
         );
 
-        // when & then
-        assertThrows(IllegalArgumentException.class, () -> profileService.create(request));
+        // when
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> profileService.create(request)
+        );
+
+        // then
+        assertEquals("이메일은 필수입니다.", exception.getMessage());
     }
 
     @Test
@@ -138,11 +145,210 @@ class ProfileServiceTest {
 
         // then
         assertEquals("이메일은 필수입니다.", exception.getMessage());
+    }
 
+    @Test
+    @DisplayName("닉네임이 null이면 프로필 생성에 실패한다.")
+    void createProfile_nullNickname_fail() {
+        // given
+        CreateProfileRequest request = createRequest(
+                "myEmail@email.com",
+                null,
+                "HashedPassword",
+                "myProfileImageUrl",
+                Region.SEOUL,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
+
+        // when
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> profileService.create(request)
+        );
+
+        // then
+        assertEquals("닉네임은 필수입니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("닉네임이 빈 문자열이면 프로필 생성에 실패한다.")
+    void createProfile_blankNickname_fail() {
+        // given
+        CreateProfileRequest request = createRequest(
+                "myEmail@email.com",
+                "",
+                "HashedPassword",
+                "myProfileImageUrl",
+                Region.SEOUL,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
+
+        // when
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> profileService.create(request)
+        );
+
+        // then
+        assertEquals("닉네임은 필수입니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("비밀번호 해시가 null이면 프로필 생성에 실패한다.")
+    void createProfile_nullPasswordHash_fail() {
+        // given
+        CreateProfileRequest request = createRequest(
+                "myEmail@email.com",
+                "myNickname",
+                null,
+                "myProfileImageUrl",
+                Region.SEOUL,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
+
+        // when
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> profileService.create(request)
+        );
+
+        // then
+        assertEquals("비밀번호는 필수입니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("비밀번호 해시가 빈 문자열이면 프로필 생성에 실패한다.")
+    void createProfile_blankPasswordHash_fail() {
+        // given
+        CreateProfileRequest request = createRequest(
+                "myEmail@email.com",
+                "myNickname",
+                "",
+                "myProfileImageUrl",
+                Region.SEOUL,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
+
+        // when
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> profileService.create(request)
+        );
+
+        // then
+        assertEquals("비밀번호는 필수입니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("지역이 null이면 프로필 생성에 실패한다.")
+    void createProfile_nullRegion_fail() {
+        // given
+        CreateProfileRequest request = createRequest(
+                "myEmail@email.com",
+                "myNickname",
+                "HashedPassword",
+                "myProfileImageUrl",
+                null,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
+
+        // when
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> profileService.create(request)
+        );
+
+        // then
+        assertEquals("지역은 필수입니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("등급이 null이면 프로필 생성에 실패한다.")
+    void createProfile_nullGrade_fail() {
+        // given
+        CreateProfileRequest request = createRequest(
+                "myEmail@email.com",
+                "myNickname",
+                "HashedPassword",
+                "myProfileImageUrl",
+                Region.SEOUL,
+                null,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
+
+        // when
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> profileService.create(request)
+        );
+
+        // then
+        assertEquals("등급은 필수입니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("연령대가 null이면 프로필 생성에 실패한다.")
+    void createProfile_nullAgeGroup_fail() {
+        // given
+        CreateProfileRequest request = createRequest(
+                "myEmail@email.com",
+                "myNickname",
+                "HashedPassword",
+                "myProfileImageUrl",
+                Region.SEOUL,
+                Grade.D,
+                null,
+                Gender.MALE
+        );
+
+        // when
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> profileService.create(request)
+        );
+
+        // then
+        assertEquals("연령대는 필수입니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("성별이 null이면 프로필 생성에 실패한다.")
+    void createProfile_nullGender_fail() {
+        // given
+        CreateProfileRequest request = createRequest(
+                "myEmail@email.com",
+                "myNickname",
+                "HashedPassword",
+                "myProfileImageUrl",
+                Region.SEOUL,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                null
+        );
+
+        // when
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> profileService.create(request)
+        );
+
+        // then
+        assertEquals("성별은 필수입니다.", exception.getMessage());
     }
 
     private CreateProfileRequest createRequest(String email) {
-        return new CreateProfileRequest(
+        return createRequest(
                 email,
                 "myNickname",
                 "HashedPassword",
@@ -151,6 +357,28 @@ class ProfileServiceTest {
                 Grade.D,
                 AgeGroup.TWENTIES,
                 Gender.MALE
+        );
+    }
+
+    private CreateProfileRequest createRequest(
+            String email,
+            String nickname,
+            String passwordHash,
+            String profileImageUrl,
+            Region region,
+            Grade grade,
+            AgeGroup ageGroup,
+            Gender gender
+    ) {
+        return new CreateProfileRequest(
+                email,
+                nickname,
+                passwordHash,
+                profileImageUrl,
+                region,
+                grade,
+                ageGroup,
+                gender
         );
     }
 }
