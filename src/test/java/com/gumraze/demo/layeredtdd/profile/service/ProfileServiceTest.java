@@ -72,19 +72,6 @@ class ProfileServiceTest {
         assertThrows(IllegalArgumentException.class, () -> profileService.create(request));
     }
 
-    private CreateProfileRequest createRequest(String email) {
-        return new CreateProfileRequest(
-                email,
-                "myNickname",
-                "HashedPassword",
-                "myProfileImageUrl",
-                Region.SEOUL,
-                Grade.D,
-                AgeGroup.TWENTIES,
-                Gender.MALE
-        );
-    }
-
     @Test
     @DisplayName("중복 이메일이면 save()가 호출되지 않는다.")
     void createProfile_duplicateEmail_doNotSave() {
@@ -119,5 +106,51 @@ class ProfileServiceTest {
 
         // then
         assertEquals("이미 사용 중인 이메일입니다.", exception.getMessage());
+    }
+    @Test
+    @DisplayName("이메일이 null이면 프로필 생성에 실패한다.")
+    void createProfile_nullEmail_fail() {
+        // given
+        CreateProfileRequest request = new CreateProfileRequest(
+                null,
+                "myNickname",
+                "myPassword",
+                "myProfileImageUrl",
+                Region.SEOUL,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
+
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> profileService.create(request));
+    }
+
+    @Test
+    @DisplayName("이메일이 빈 문자열이면 프로필 생성에 실패한다.")
+    void createProfile_blankEmail_fail() {
+        // given
+        String emptyEmail = "";
+        CreateProfileRequest request = createRequest(emptyEmail);
+
+        // when
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> profileService.create(request));
+
+        // then
+        assertEquals("이메일은 필수입니다.", exception.getMessage());
+
+    }
+
+    private CreateProfileRequest createRequest(String email) {
+        return new CreateProfileRequest(
+                email,
+                "myNickname",
+                "HashedPassword",
+                "myProfileImageUrl",
+                Region.SEOUL,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
     }
 }

@@ -23,6 +23,10 @@ public class ProfileServiceImpl implements ProfileService {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
+        if (request.email() == null || request.email().isBlank()) {
+            throw new IllegalArgumentException("이메일은 필수입니다.");
+        }
+
         Profile profile = Profile.create(
                 request.email(),
                 request.nickname(),
