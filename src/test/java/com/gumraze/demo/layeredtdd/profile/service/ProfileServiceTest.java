@@ -1,6 +1,7 @@
 package com.gumraze.demo.layeredtdd.profile.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -60,5 +61,30 @@ class ProfileServiceTest {
         assertEquals(Gender.MALE, profile.getGender());
 
         then(profileRepository).should().save(any(Profile.class));
+    }
+
+    @Test
+    @DisplayName("중복 이메일이면 프로필 생성에 실패한다.")
+    void createProfile_duplicateEmail_fail() {
+        // given: 등록된 이메일이 포함된 요청이 주어짐
+        String duplicatedEmail = "myEmail@email.com";
+
+        CreateProfileRequest request = new CreateProfileRequest(
+                duplicatedEmail,
+                "myNickname",
+                "HashedPassword",
+                "myProfileImageUrl",
+                Region.SEOUL,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
+
+        given(profileRepository.existsByEmail(duplicatedEmail))
+                .willReturn(true);
+
+        // when & then
+        // create 실행 시, IllegalArgumentException이 발생함.
+        assertThrows(IllegalArgumentException.class, () -> profileService.create(request));
     }
 }
