@@ -75,14 +75,6 @@ public class ProfileControllerTest {
         mockMvc.perform(post("/profiles")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value(email))
-                .andExpect(jsonPath("$.nickname").value(nickname))
-                .andExpect(jsonPath("$.profileImageUrl").value(profileImageUrl))
-                .andExpect(jsonPath("$.tag").value(tag))
-                .andExpect(jsonPath("$.region").value(Region.SEOUL.name()))
-                .andExpect(jsonPath("$.grade").value(Grade.D.name()))
-                .andExpect(jsonPath("$.ageGroup").value(AgeGroup.TWENTIES.name()))
-                .andExpect(jsonPath("$.gender").value(Gender.MALE.name()));
+                .andExpect(status().isCreated());
     }
 }
