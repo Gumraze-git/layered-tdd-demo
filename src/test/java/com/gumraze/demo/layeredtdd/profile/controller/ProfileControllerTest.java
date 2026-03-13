@@ -1,0 +1,88 @@
+package com.gumraze.demo.layeredtdd.profile.controller;
+
+import com.gumraze.demo.layeredtdd.profile.constants.AgeGroup;
+import com.gumraze.demo.layeredtdd.profile.constants.Gender;
+import com.gumraze.demo.layeredtdd.profile.constants.Grade;
+import com.gumraze.demo.layeredtdd.profile.constants.Region;
+import com.gumraze.demo.layeredtdd.profile.dto.CreateProfileRequest;
+import com.gumraze.demo.layeredtdd.profile.entity.Profile;
+import com.gumraze.demo.layeredtdd.profile.service.ProfileService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest()
+public class ProfileControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private ProfileService profileService;
+
+    @Test
+    @DisplayName("유효한 요청이면 201과 프로필 응답을 반환한다.")
+    void createProfile_validRequest_returnCreated() throws Exception {
+        // given
+        String email = "myEmail@email.com";
+        String nickname = "myNickname";
+        String password = "HashedPassword";
+        String profileImageUrl = "myProfileImageUrl";
+        String tag = "AB12";
+
+        CreateProfileRequest request = new CreateProfileRequest(
+                email,
+                nickname,
+                password,
+                profileImageUrl,
+                Region.SEOUL,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
+
+        String requestBody = objectMapper.writeValueAsString(request);
+
+        Profile profile = Profile.create(
+                email,
+                nickname,
+                password,
+                profileImageUrl,
+                tag,
+                Region.SEOUL,
+                Grade.D,
+                AgeGroup.TWENTIES,
+                Gender.MALE
+        );
+
+        given(profileService.create(any())).willReturn(profile);
+
+        // when & then
+        mockMvc.perform(post("/profiles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.email").value(email))
+                .andExpect(jsonPath("$.nickname").value(nickname))
+                .andExpect(jsonPath("$.profileImageUrl").value(profileImageUrl))
+                .andExpect(jsonPath("$.tag").value(tag))
+                .andExpect(jsonPath("$.region").value(Region.SEOUL.name()))
+                .andExpect(jsonPath("$.grade").value(Grade.D.name()))
+                .andExpect(jsonPath("$.ageGroup").value(AgeGroup.TWENTIES.name()))
+                .andExpect(jsonPath("$.gender").value(Gender.MALE.name()));
+    }
+}
