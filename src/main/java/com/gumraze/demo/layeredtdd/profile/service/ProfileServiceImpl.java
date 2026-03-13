@@ -3,29 +3,31 @@ package com.gumraze.demo.layeredtdd.profile.service;
 import com.gumraze.demo.layeredtdd.profile.dto.CreateProfileRequest;
 import com.gumraze.demo.layeredtdd.profile.entity.Profile;
 import com.gumraze.demo.layeredtdd.profile.repository.ProfileRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService {
 
     private final ProfileRepository profileRepository;
-
-    public ProfileServiceImpl(ProfileRepository profileRepository) {
-        this.profileRepository = profileRepository;
-    }
+    private final ProfileTagGenerator profileTagGenerator;
 
     @Override
     public Profile create(CreateProfileRequest request) {
         validateRequiredFields(request);
         validateDuplicateEmail(request.email());
 
+        String tag = generateUniqueTag();
+
         Profile profile = Profile.create(
                 request.email(),
                 request.nickname(),
                 request.passwordHash(),
                 request.profileImageUrl(),
+                tag,
                 request.region(),
                 request.grade(),
                 request.ageGroup(),
@@ -62,4 +64,14 @@ public class ProfileServiceImpl implements ProfileService {
             throw new IllegalArgumentException(message);
         }
     }
+
+    private String generateUniqueTag() {
+        do {
+            String tag = profileTagGenerator.generate();
+            if (!profileRepository.existsByTag(tag)) {
+                return tag;
+            }
+        } while (true);
+    }
+
 }

@@ -37,6 +37,8 @@ public class Profile {
     private String passwordHash;
 
     private String profileImageUrl;
+
+    @Column(nullable = false, unique = true, length = 4)
     private String tag;
 
     @Enumerated(EnumType.STRING)
@@ -64,6 +66,7 @@ public class Profile {
             String nickname,
             String passwordHash,
             String profileImageUrl,
+            String tag,
             Region region,
             Grade grade,
             AgeGroup ageGroup,
@@ -74,6 +77,7 @@ public class Profile {
         profile.nickname = nickname;
         profile.passwordHash = passwordHash;
         profile.profileImageUrl = profileImageUrl;
+        profile.tag = tag;
         profile.region = region;
         profile.grade = grade;
         profile.ageGroup = ageGroup;
