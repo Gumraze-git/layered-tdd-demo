@@ -40,6 +40,8 @@ class ProfileServiceTest {
         String validEmail = "myEmail@email.com";
         CreateProfileRequest request = createRequest(validEmail);
 
+        given(profileTagGenerator.generate()).willReturn("AB12");
+        given(profileRepository.existsByTag("AB12")).willReturn(false);
         given(profileRepository.save(any(Profile.class)))
                 .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -51,6 +53,7 @@ class ProfileServiceTest {
         assertEquals("myNickname", profile.getNickname());
         assertEquals("HashedPassword", profile.getPasswordHash());
         assertEquals("myProfileImageUrl", profile.getProfileImageUrl());
+        assertEquals("AB12", profile.getTag());
         assertEquals(Region.SEOUL, profile.getRegion());
         assertEquals(Grade.D, profile.getGrade());
         assertEquals(AgeGroup.TWENTIES, profile.getAgeGroup());
