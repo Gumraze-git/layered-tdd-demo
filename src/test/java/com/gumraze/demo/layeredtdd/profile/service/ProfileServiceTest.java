@@ -27,6 +27,9 @@ class ProfileServiceTest {
     @Mock
     private ProfileRepository profileRepository;
 
+    @Mock
+    private ProfileTagGenerator profileTagGenerator;
+
     @InjectMocks
     private ProfileServiceImpl profileService;
 
@@ -346,6 +349,53 @@ class ProfileServiceTest {
         // then
         assertEquals("성별은 필수입니다.", exception.getMessage());
     }
+
+    @Test
+    @DisplayName("프로필 생성 시 4자리 태그가 자동 생성되어 할당된다.")
+    void createProfile_assignGeneratedTag() {
+        // given
+        String validEmail = "myEmail@email.com";
+        String generatedTag = "AB12";
+        CreateProfileRequest request = createRequest(validEmail);
+
+        // generate가 태그 생성
+        given(profileTagGenerator.generate()).willReturn(generatedTag);
+        // 생성된 태그는 아직 DB에 없어야함
+        given(profileRepository.existsByTag(generatedTag)).willReturn(false);
+
+        given(profileRepository.save(any(Profile.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        Profile profile = profileService.create(request); // 여기서 태그가 저장이 되어야함
+
+        // then
+        assertEquals(generatedTag, profile.getTag());
+    }
+
+    @Test
+    @DisplayName("이미 존재하는 태그가 생성되면, 다시 새로운 태그를 생성한다.")
+    void createProfile_duplicateTag_regenerateTag() {
+        // given
+        String validEmail = "myEmail@email.com";
+        String duplicatedTag = "AB12"; // 첫 번째로 생성한 태그가 이미 중복인 경우
+        String regeneratedTag = "CD34"; // 태그를 다시 생성함
+        CreateProfileRequest request = createRequest(validEmail);
+
+        given(profileTagGenerator.generate()).willReturn(duplicatedTag, regeneratedTag);
+        given(profileRepository.existsByTag(duplicatedTag)).willReturn(true);
+        given(profileRepository.existsByTag(regeneratedTag)).willReturn(false);
+        given(profileRepository.save(any(Profile.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        Profile profile = profileService.create(request);
+
+        // then
+        assertEquals(regeneratedTag, profile.getTag());
+    }
+
+
 
     private CreateProfileRequest createRequest(String email) {
         return createRequest(
