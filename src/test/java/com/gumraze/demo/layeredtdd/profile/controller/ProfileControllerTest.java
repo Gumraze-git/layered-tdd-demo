@@ -82,4 +82,77 @@ public class ProfileControllerTest {
         // 실제 서비스 호출이 되었는지 추가 검증
         then(profileService).should().create(any(CreateProfileRequest.class));
     }
+
+    @Test
+    @DisplayName("잘못된 region 값이면 400을 반환한다.")
+    void createProfile_invalidRegion_returnsBadRequest() throws Exception {
+        // given
+        String requestBody = """
+            {
+              "email": "myEmail@email.com",
+              "nickname": "myNickname",
+              "passwordHash": "HashedPassword",
+              "profileImageUrl": "myProfileImageUrl",
+              "region": "INVALID",
+              "grade": "D",
+              "ageGroup": "TWENTIES",
+              "gender": "MALE"
+            }
+            """;
+
+        // when & then
+        mockMvc.perform(post("/profiles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("이메일이 없으면 400을 반환한다.")
+    void createProfile_nullEmail_returnsBadRequest() throws Exception {
+        // given
+        String requestBody = """
+                    {
+                      "nickname": "myNickname",
+                      "passwordHash": "HashedPassword",
+                      "profileImageUrl": "myProfileImageUrl",
+                      "region": "SEOUL",
+                      "grade": "D",
+                      "ageGroup": "TWENTIES",
+                """;
+        // when & then
+        mockMvc.perform(post("/profiles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("중복 이메일이면 409을 반환한다.")
+    void createProfile_duplicateEmail_returnsConflict() throws Exception {
+        // given
+        String requestBody = """
+                {
+                  "email": "myEmail@email.com",
+                  "nickname": "myNickname",
+                  "passwordHash": "HashedPassword",
+                  "profileImageUrl": "myProfileImageUrl",
+                  "region": "SEOUL",
+                  "grade": "D",
+                  "ageGroup": "TWENTIES",
+                  "gender": "MALE"
+                }
+                """;
+
+        given(profileService.create(any(CreateProfileRequest.class)))
+                .willThrow(new IllegalArgumentException("이미 사용 중인 이메일입니다."));
+
+        // when & then
+        mockMvc.perform(post("/profiles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isConflict());
+    }
 }
+
+
